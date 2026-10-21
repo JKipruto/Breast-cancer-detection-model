@@ -41,7 +41,6 @@ try:
         encoder = LabelEncoder()
         y = dataset["diagnosis"]
         y = encoder.fit_transform(y)
-        print(y)
 
         x = dataset.drop(columns="diagnosis")
 
@@ -53,6 +52,15 @@ try:
         plt.xlabel("Diagnosis")
         plt.ylabel("Counts")
         plt.show()
+
+        for col in x.columns:
+            plt.figure(figsize=(6, 6))
+            plt.title(f"BoxPlot for {col}")
+            sns.boxplot(x=col, data=x)
+            plt.title(f"{col}'s BoxPlot")
+            plt.xlabel(col)
+            plt.show()
+
     else:
         print("Upload the file since it isn't available")
 except Exception as e:
