@@ -37,6 +37,22 @@ try:
         print(dataset.isna().sum())
         print("\n")
         print(f"Duplicated:{dataset.duplicated().sum()}")
+
+        encoder = LabelEncoder()
+        y = dataset["diagnosis"]
+        y = encoder.fit_transform(y)
+        print(y)
+
+        x = dataset.drop(columns="diagnosis")
+
+        plt.figure(figsize=(8, 8))
+        plt.title("A count plot for Diagnosis")
+        ax = sns.countplot(x=y)
+        ax.bar_label(ax.containers[0])
+        plt.xticks([0, 1], encoder.classes_)
+        plt.xlabel("Diagnosis")
+        plt.ylabel("Counts")
+        plt.show()
     else:
         print("Upload the file since it isn't available")
 except Exception as e:
