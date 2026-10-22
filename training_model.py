@@ -34,13 +34,12 @@ try:
         print("\n")
         print(dataset.isnull().sum())
         print("\n")
-        print(dataset.isna().sum())
-        print("\n")
         print(f"Duplicated:{dataset.duplicated().sum()}")
 
         encoder = LabelEncoder()
         y = dataset["diagnosis"]
         y = encoder.fit_transform(y)
+        print(encoder.classes_)
 
         x = dataset.drop(columns="diagnosis")
 
@@ -54,12 +53,18 @@ try:
         plt.show()
 
         for col in x.columns:
-            plt.figure(figsize=(6, 6))
-            plt.title(f"BoxPlot for {col}")
-            sns.boxplot(x=col, data=x)
-            plt.title(f"{col}'s BoxPlot")
+            plt.figure(figsize=(5, 4))
+            plt.title(f"Skewness of {col}")
+            sns.kdeplot(x=col, data=x)
             plt.xlabel(col)
             plt.show()
+
+        dataset["diagnosis"] = y
+        print(dataset.corr())
+        plt.figure(figsize=(12, 12))
+        plt.title("Correlation Heatmap")
+        sns.heatmap(dataset, fmt=".2f", cmap="coolwarm")
+        plt.show()
 
     else:
         print("Upload the file since it isn't available")
