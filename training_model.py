@@ -6,6 +6,7 @@ import joblib
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
 from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
@@ -43,6 +44,33 @@ try:
 
         x = dataset.drop(columns="diagnosis")
 
+        try:
+            scorings = [f_classif, mutual_info_classif]
+            for scoring in scorings:
+                selector = SelectKBest(
+                    score_func=scoring,
+                    k=16
+                )
+                x_new_features = selector.fit_transform(x, y)
+                scores = pd.DataFrame(
+                    {
+                        "feature": x.columns,
+                        "score": selector.scores_,
+                        "selected": selector.get_support()
+                    }
+                )
+                print(scoring)
+                if scores["selected"] is True:
+                    print(scores.sort_values(by="score", ascending=False))
+                    print("\n")
+
+                else:
+                    pass
+
+            print(scores["feature"])
+        except Exception as e:
+            print(e)
+
         plt.figure(figsize=(8, 8))
         plt.title("A count plot for Diagnosis")
         ax = sns.countplot(x=y)
@@ -59,14 +87,7 @@ try:
             plt.xlabel(col)
             plt.show()
 
-        dataset["diagnosis"] = y
-        print(dataset.corr())
-        plt.figure(figsize=(12, 12))
-        plt.title("Correlation Heatmap")
-        sns.heatmap(dataset, fmt=".2f", cmap="coolwarm")
-        plt.show()
-
     else:
         print("Upload the file since it isn't available")
-except Exception as e:
+except FileNotFoundError as e:
     print(e)
