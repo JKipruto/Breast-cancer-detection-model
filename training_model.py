@@ -43,6 +43,12 @@ try:
         print(encoder.classes_)
 
         x = dataset.drop(columns="diagnosis")
+        dataset["diagnosis"] = y
+        corr = dataset.corr()
+        print(corr)
+        f_scores = {}
+        mi_scores = {}
+        fatures = []
 
         try:
             scorings = [f_classif, mutual_info_classif]
@@ -52,22 +58,25 @@ try:
                     k=16
                 )
                 x_new_features = selector.fit_transform(x, y)
-                scores = pd.DataFrame(
-                    {
-                        "feature": x.columns,
-                        "score": selector.scores_,
-                        "selected": selector.get_support()
-                    }
-                )
-                print(scoring)
-                if scores["selected"] is True:
-                    print(scores.sort_values(by="score", ascending=False))
+                if scoring is f_classif:
+                    f_scores["feature"] = x.columns
+                    f_scores["score"] = selector.scores_
+                    f_scores["selected"] = selector.get_support()
+                    f_scores_df = pd.DataFrame(f_scores)
+                    print(scoring)
+                    print(f_scores_df.sort_values(by="score", ascending=False))
                     print("\n")
 
                 else:
-                    pass
+                    mi_scores["feature"] = x.columns
+                    mi_scores["score"] = selector.scores_
+                    mi_scores["selected"] = selector.get_support()
+                    mi_scores_df = pd.DataFrame(mi_scores)
+                    print(scoring)
+                    print(mi_scores_df.sort_values(
+                        by="score", ascending=False))
+                    print("\n")
 
-            print(scores["feature"])
         except Exception as e:
             print(e)
 
@@ -80,6 +89,9 @@ try:
         plt.ylabel("Counts")
         plt.show()
 
+        features = mi_scores["feature"].to_list()
+        print(features)
+        x = dataset[features]
         for col in x.columns:
             plt.figure(figsize=(5, 4))
             plt.title(f"Skewness of {col}")
