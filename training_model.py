@@ -91,7 +91,9 @@ try:
 
         features = mi_scores["feature"].to_list()
         print(features)
-        x = dataset[features]
+        x = x.drop(columns=["texture_worst", "concavity_se",
+                   "texture_mean", "smoothness_worst", "symmetry_worst", "smoothness_mean", "compactness_se", "fractal_dimension_worst", "symmetry_mean", "fractal_dimension_se", "smoothness_se", "symmetry_se",
+                            "fractal_dimension_mean", "texture_se"])
         for col in x.columns:
             plt.figure(figsize=(5, 4))
             plt.title(f"Skewness of {col}")
