@@ -100,6 +100,18 @@ try:
             sns.kdeplot(x=col, data=x)
             plt.xlabel(col)
             plt.show()
+        columns_2 = ["diagnosis", "radius_mean", "perimeter_mean", "area_mean", "compactness_mean",
+                     "concavity_mean", "concave points_mean", "radius_se", "perimeter_se",
+                     "area_se", "concave points_se", "radius_worst", "perimeter_worst",
+                     "area_worst", "compactness_worst", "concavity_worst",
+                     "concave points_worst"]
+        data_corr = dataset[columns_2]
+
+        plt.figure(figsize=(12, 12))
+        plt.title("Correlation Heatmap")
+        sns.heatmap(data_corr.corr(), annot=True, cmap="coolwarm",
+                    fmt=".2f", square=True, vmin=-1, vmax=1)
+        plt.show()
 
     else:
         print("Upload the file since it isn't available")
