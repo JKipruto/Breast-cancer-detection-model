@@ -110,7 +110,7 @@ try:
         plt.figure(figsize=(12, 12))
         plt.title("Correlation Heatmap")
         sns.heatmap(data_corr.corr(), annot=True, cmap="coolwarm",
-                    fmt=".2f", square=True, vmin=-1, vmax=1)
+                    fmt=".2f", vmin=-1, vmax=1)
         plt.show()
 
     else:
