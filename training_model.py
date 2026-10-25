@@ -4,7 +4,6 @@ import seaborn as sns
 import os
 import joblib
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
 from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
@@ -112,6 +111,30 @@ try:
         sns.heatmap(data_corr.corr(), annot=True, cmap="coolwarm",
                     fmt=".2f", vmin=-1, vmax=1)
         plt.show()
+
+        x = data_corr.drop("diagnosis", axis=1)
+        y = data_corr["diagnosis"]
+
+        random_state = 42
+        x_train, x_test, y_train, y_test = train_test_split(
+            x, y, test_size=0.2, random_state=random_state)
+
+        scaler = StandardScaler()
+
+        def Build_Pipeline(model):
+            return Pipeline([("scaler", scaler), "model", model])
+
+        models = {
+            "logreg": LogisticRegression(),
+            "DesTree": DecisionTreeClassifier(),
+            "SVC": SVC(),
+            "Knn": KNeighborsClassifier(),
+            "Rf": RandomForestClassifier(),
+            "bag": BaggingClassifier(),
+            "Adaboost": AdaBoostClassifier(),
+            "voting": VotingClassifier(),
+            "xgboost": XGBClassifier()
+        }
 
     else:
         print("Upload the file since it isn't available")
