@@ -124,6 +124,12 @@ try:
         def Build_Pipeline(model):
             return Pipeline([("scaler", scaler), "model", model])
 
+        voting_estimators = [
+            ("logReg", LogisticRegression(max_iter=1000, random_state=random_state)),
+            ("svc", SVC(probability=True, random_state=random_state)),
+            ("rf", RandomForestClassifier(random_state=random_state))
+        ]
+
         models = {
             "logreg": LogisticRegression(),
             "DesTree": DecisionTreeClassifier(),
@@ -132,7 +138,7 @@ try:
             "Rf": RandomForestClassifier(),
             "bag": BaggingClassifier(),
             "Adaboost": AdaBoostClassifier(),
-            "voting": VotingClassifier(),
+            "voting": VotingClassifier(estimators=voting_estimators),
             "xgboost": XGBClassifier()
         }
 
