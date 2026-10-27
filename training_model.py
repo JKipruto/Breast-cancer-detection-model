@@ -148,7 +148,7 @@ try:
             "logreg": (LogisticRegression(random_state=random_state), "grid", {"model__max_iter": iterations, "model__C": model_c}, None),
             "Destree": (DecisionTreeClassifier(random_state=random_state), "grid", {"model__max_depth": max_depth, "model__max_leaf_nodes": leaf_nodes}, None),
             "SVC": (SVC(random_state=random_state), "grid", {"model__kernel": kernel, "model__gamma": gamma, "model__C": model_c}, None),
-            "knn": (KNeighborsClassifier(random_state=random_state), "grid", {"model__n_neighbors": no_neighbors, "model__weights": weights, "model__p": p}, None),
+            "knn": (KNeighborsClassifier(), "grid", {"model__n_neighbors": no_neighbors, "model__weights": weights, "model__p": p}, None),
             "rf": (RandomForestClassifier(random_state=random_state), "random", {"model__max_depth": max_depth, "model__max_leaf_nodes": leaf_nodes, "model__n_estimators": n_estimators}, 20),
             "bag": (BaggingClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state)), "random", {"model__n_estimators": n_estimators}, 20),
             "adaboost": (AdaBoostClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state)), "random", {"model__n_estimators": n_estimators, "model__learning_rate": learning_rate}, 20)
