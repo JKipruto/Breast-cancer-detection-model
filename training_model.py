@@ -18,6 +18,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_sc
 model_file = "Breast_cancer_dataset2.csv"
 try:
     if os.path.exists(model_file):
+        random_state = 42
         print("File available")
         dataset = pd.read_csv(model_file)
         columns = ["diagnosis", "radius_mean", "texture_mean", "perimeter_mean", "area_mean", "smoothness_mean", "compactness_mean", "concavity_mean", "concave points_mean", "symmetry_mean", "fractal_dimension_mean", "radius_se", "texture_se", "perimeter_se", "area_se", "smoothness_se",
@@ -48,6 +49,8 @@ try:
         f_scores = {}
         mi_scores = {}
         fatures = []
+        x_train_1, x_test_1, y_train_1, y_test_1 = train_test_split(
+            x, y, test_size=0.2, random_state=random_state, stratify=y)
 
         try:
             scorings = [f_classif, mutual_info_classif]
@@ -56,7 +59,7 @@ try:
                     score_func=scoring,
                     k=16
                 )
-                x_new_features = selector.fit_transform(x, y)
+                x_new_features = selector.fit_transform(x_train_1, y_train_1)
                 if scoring is f_classif:
                     f_scores["feature"] = x.columns
                     f_scores["score"] = selector.scores_
@@ -105,6 +108,7 @@ try:
                      "area_worst", "compactness_worst", "concavity_worst",
                      "concave points_worst"]
         data_corr = dataset[columns_2]
+        print(data_corr.columns)
 
         plt.figure(figsize=(12, 12))
         plt.title("Correlation Heatmap")
@@ -115,7 +119,6 @@ try:
         x = data_corr.drop("diagnosis", axis=1)
         y = data_corr["diagnosis"]
 
-        random_state = 42
         x_train, x_test, y_train, y_test = train_test_split(
             x, y, test_size=0.2, random_state=random_state, stratify=y)
 
