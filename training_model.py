@@ -7,7 +7,7 @@ import joblib
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
-from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV, cross_val_score
+from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV, cross_val_score, StratifiedKFold
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
@@ -117,12 +117,10 @@ try:
 
         random_state = 42
         x_train, x_test, y_train, y_test = train_test_split(
-            x, y, test_size=0.2, random_state=random_state)
-
-        scaler = StandardScaler()
+            x, y, test_size=0.2, random_state=random_state, stratify=y)
 
         def Build_Pipeline(model):
-            return Pipeline([("scaler", scaler), "model", model])
+            return Pipeline([("scaler", StandardScaler()), ("model", model)])
 
         voting_estimators = [
             ("logReg", Build_Pipeline(LogisticRegression(
@@ -131,7 +129,6 @@ try:
             ("rf", Build_Pipeline(RandomForestClassifier(random_state=random_state)))
         ]
 
-        iterations = np.arange(100, 10000, 50)
         max_depth = np.arange(2, 20, 1)
         leaf_nodes = np.arange(2, 20, 1)
         kernel = ["linear", "poly", "rbf"]
@@ -140,19 +137,53 @@ try:
         no_neighbors = np.arange(2, 20)
         weights = ["distance", "uniform"]
         p = [1, 2]
-        n_estimators = np.arange(1, 20)
-        learning_rate = np.logspace(-3, -5, 8)
+        n_estimators = np.arange(50, 310, 10)
+        learning_rate = np.logspace(-2, 0, 8)
         voting_type = ["hard", "soft"]
 
         search_config = {  # "model_name":(model,kind of cv,parameters in dict,iteration-->for randomizedCV)
-            "logreg": (LogisticRegression(random_state=random_state), "grid", {"model__max_iter": iterations, "model__C": model_c}, None),
+            "logreg": (LogisticRegression(max_iter=1000, random_state=random_state), "grid", {"model__C": model_c}, None),
             "Destree": (DecisionTreeClassifier(random_state=random_state), "grid", {"model__max_depth": max_depth, "model__max_leaf_nodes": leaf_nodes}, None),
             "SVC": (SVC(random_state=random_state), "grid", {"model__kernel": kernel, "model__gamma": gamma, "model__C": model_c}, None),
             "knn": (KNeighborsClassifier(), "grid", {"model__n_neighbors": no_neighbors, "model__weights": weights, "model__p": p}, None),
             "rf": (RandomForestClassifier(random_state=random_state), "random", {"model__max_depth": max_depth, "model__max_leaf_nodes": leaf_nodes, "model__n_estimators": n_estimators}, 20),
             "bag": (BaggingClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state)), "random", {"model__n_estimators": n_estimators}, 20),
-            "adaboost": (AdaBoostClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state)), "random", {"model__n_estimators": n_estimators, "model__learning_rate": learning_rate}, 20)
+            "adaboost": (AdaBoostClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state, max_depth=2)), "random", {"model__n_estimators": n_estimators, "model__learning_rate": learning_rate}, 20)
         }
+
+        best_estimator = {}
+        tuned_value = {}
+        best_score = {}
+        cv = StratifiedKFold(n_splits=5, shuffle=True,
+                             random_state=random_state)
+        for name, (model, kind, param, iteration) in search_config.items():
+            pipe = Build_Pipeline(model)
+            if kind == "grid":
+                search = GridSearchCV(
+                    estimator=pipe,
+                    param_grid=param,
+                    scoring="recall",
+                    cv=cv,
+                    n_jobs=2,
+                    verbose=2
+                )
+
+            else:
+                search = RandomizedSearchCV(
+                    estimator=pipe,
+                    param_distributions=param,
+                    n_iter=iteration,
+                    scoring="recall",
+                    cv=cv,
+                    n_jobs=2,
+                    verbose=2,
+                    random_state=random_state
+                )
+
+            search.fit(x_train, y_train)
+            best_estimator[name] = search.best_estimator_
+            tuned_value[name] = search.best_params_
+            best_score[name] = search.best_score_
 
         model_untune = {"voting": VotingClassifier(
             estimators=voting_estimators)}
