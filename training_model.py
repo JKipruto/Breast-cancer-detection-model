@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
@@ -6,13 +7,12 @@ import joblib
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
-from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV, cross_val_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, VotingClassifier, AdaBoostClassifier
-from xgboost import XGBClassifier
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, classification_report, confusion_matrix
 
 model_file = "Breast_cancer_dataset2.csv"
@@ -125,22 +125,37 @@ try:
             return Pipeline([("scaler", scaler), "model", model])
 
         voting_estimators = [
-            ("logReg", LogisticRegression(max_iter=1000, random_state=random_state)),
-            ("svc", SVC(probability=True, random_state=random_state)),
-            ("rf", RandomForestClassifier(random_state=random_state))
+            ("logReg", Build_Pipeline(LogisticRegression(
+                max_iter=1000, random_state=random_state))),
+            ("svc", Build_Pipeline(SVC(probability=True, random_state=random_state))),
+            ("rf", Build_Pipeline(RandomForestClassifier(random_state=random_state)))
         ]
 
-        models = {
-            "logreg": LogisticRegression(),
-            "DesTree": DecisionTreeClassifier(),
-            "SVC": SVC(),
-            "Knn": KNeighborsClassifier(),
-            "Rf": RandomForestClassifier(),
-            "bag": BaggingClassifier(),
-            "Adaboost": AdaBoostClassifier(),
-            "voting": VotingClassifier(estimators=voting_estimators),
-            "xgboost": XGBClassifier()
+        iterations = np.arange(100, 10000, 50)
+        max_depth = np.arange(2, 20, 1)
+        leaf_nodes = np.arange(2, 20, 1)
+        kernel = ["linear", "poly", "rbf"]
+        gamma = ["scale", "auto"]
+        model_c = np.logspace(-2, 2, 10)
+        no_neighbors = np.arange(2, 20)
+        weights = ["distance", "uniform"]
+        p = [1, 2]
+        n_estimators = np.arange(1, 20)
+        learning_rate = np.logspace(-3, -5, 8)
+        voting_type = ["hard", "soft"]
+
+        search_config = {  # "model_name":(model,kind of cv,parameters in dict,iteration-->for randomizedCV)
+            "logreg": (LogisticRegression(random_state=random_state), "grid", {"model__max_iter": iterations, "model__C": model_c}, None),
+            "Destree": (DecisionTreeClassifier(random_state=random_state), "grid", {"model__max_depth": max_depth, "model__max_leaf_nodes": leaf_nodes}, None),
+            "SVC": (SVC(random_state=random_state), "grid", {"model__kernel": kernel, "model__gamma": gamma, "model__C": model_c}, None),
+            "knn": (KNeighborsClassifier(random_state=random_state), "grid", {"model__n_neighbors": no_neighbors, "model__weights": weights, "model__p": p}, None),
+            "rf": (RandomForestClassifier(random_state=random_state), "random", {"model__max_depth": max_depth, "model__max_leaf_nodes": leaf_nodes, "model__n_estimators": n_estimators}, 20),
+            "bag": (BaggingClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state)), "random", {"model__n_estimators": n_estimators}, 20),
+            "adaboost": (AdaBoostClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state)), "random", {"model__n_estimators": n_estimators, "model__learning_rate": learning_rate}, 20)
         }
+
+        model_untune = {"voting": VotingClassifier(
+            estimators=voting_estimators)}
 
     else:
         print("Upload the file since it isn't available")
