@@ -122,8 +122,10 @@ try:
         x_train, x_test, y_train, y_test = train_test_split(
             x, y, test_size=0.2, random_state=random_state, stratify=y)
 
+        scaler = StandardScaler()
+
         def Build_Pipeline(model):
-            return Pipeline([("scaler", StandardScaler()), ("model", model)])
+            return Pipeline([("scaler", scaler), ("model", model)])
 
         voting_estimators = [
             ("logReg", Build_Pipeline(LogisticRegression(
@@ -151,7 +153,8 @@ try:
             "knn": (KNeighborsClassifier(), "grid", {"model__n_neighbors": no_neighbors, "model__weights": weights, "model__p": p}, None),
             "rf": (RandomForestClassifier(random_state=random_state), "random", {"model__max_depth": max_depth, "model__max_leaf_nodes": leaf_nodes, "model__n_estimators": n_estimators}, 20),
             "bag": (BaggingClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state)), "random", {"model__n_estimators": n_estimators}, 20),
-            "adaboost": (AdaBoostClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state, max_depth=2)), "random", {"model__n_estimators": n_estimators, "model__learning_rate": learning_rate}, 20)
+            "adaboost": (AdaBoostClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state, max_depth=2)), "random", {"model__n_estimators": n_estimators, "model__learning_rate": learning_rate}, 20),
+            "voting": (VotingClassifier(estimators=voting_estimators), "grid", {"model__voting": voting_type}, None)
         }
 
         best_estimator = {}
@@ -187,10 +190,32 @@ try:
             best_estimator[name] = search.best_estimator_
             tuned_value[name] = search.best_params_
             best_score[name] = search.best_score_
+        metrics = []
+        cm = {}
+        for name, model in best_estimator.items():
+            pred = model.predict(x_test)
+            metrics.append({
+                "name": name,
+                "precision score": precision_score(y_test, pred),
+                "recall": recall_score(y_test, pred),
+                "Acuracy": accuracy_score(y_test, pred),
+                "f1": f1_score(y_test, pred)
+            })
+            cr = classification_report(y_test, pred)
+            print(cr)
+            cm[name] = confusion_matrix(y_test, pred)
 
-        model_untune = {"voting": VotingClassifier(
-            estimators=voting_estimators)}
+        metrics_df = pd.DataFrame(metrics)
+        print(metrics_df)
 
+        for name, cm in cm.items():
+            plt.title(f"Confusion Matrix of {name}")
+            plt.figure(figsize=(6, 6))
+            sns.heatmap(cm, annot=True, cmap="coolwarm", fmt="d",
+                        xticklabels=encoder.classes_, yticklabels=encoder.classes_)
+            plt.xlabel("Predicted")
+            plt.ylabel("Actual")
+            plt.show()
     else:
         print("Upload the file since it isn't available")
 except FileNotFoundError as e:
