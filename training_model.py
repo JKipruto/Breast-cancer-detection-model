@@ -59,7 +59,7 @@ try:
                     score_func=scoring,
                     k=16
                 )
-                x_new_features = selector.fit_transform(x_train_1, y_train_1)
+                selector.fit_transform(x_train_1, y_train_1)
                 if scoring is f_classif:
                     f_scores["feature"] = x.columns
                     f_scores["score"] = selector.scores_
@@ -179,7 +179,7 @@ try:
                     scoring="recall",
                     cv=cv,
                     n_jobs=2,
-                    verbose=2,
+                    verbose=3,
                     random_state=random_state
                 )
 
