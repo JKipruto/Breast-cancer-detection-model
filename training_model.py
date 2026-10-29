@@ -208,10 +208,10 @@ try:
         metrics_df = pd.DataFrame(metrics)
         print(metrics_df)
 
-        for name, cm in cm.items():
+        for name, report in cm.items():
             plt.title(f"Confusion Matrix of {name}")
             plt.figure(figsize=(6, 6))
-            sns.heatmap(cm, annot=True, cmap="coolwarm", fmt="d",
+            sns.heatmap(report, annot=True, cmap="coolwarm", fmt="d",
                         xticklabels=encoder.classes_, yticklabels=encoder.classes_)
             plt.xlabel("Predicted")
             plt.ylabel("Actual")
