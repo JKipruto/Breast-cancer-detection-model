@@ -225,8 +225,15 @@ try:
         for name, model in best_estimator.items():
             print(f"{name}:{model}")
 
-        final_model = LogisticRegression(
-            max_iter=1000, C=1.6681005372000592, random_state=random_state)
+        model_pipeline = best_estimator["logreg"]
+        print(tuned_value["logreg"])
+
+        pred = model_pipeline.predict(x_test)
+        print(classification_report(y_test, pred, target_names=encoder.classes_))
+        print(confusion_matrix(y_test, pred))
+
+        joblib.dump(model_pipeline, "breast_cancer_logreg.pkl")
+        joblib.dump(list(x_train.columns), "feature_names.pkl")
     else:
         print("Upload the file since it isn't available")
 except FileNotFoundError as e:
