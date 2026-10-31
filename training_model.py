@@ -102,7 +102,7 @@ try:
             sns.kdeplot(x=col, data=x)
             plt.xlabel(col)
             plt.show()
-        columns_2 = ["diagnosis", "radius_mean", "perimeter_mean", "area_mean", "compactness_mean",
+        columns_2 = ["diagnosis", "radius_mean", "compactness_mean",
                      "concavity_mean", "concave points_mean", "radius_se", "perimeter_se",
                      "area_se", "concave points_se", "radius_worst", "perimeter_worst",
                      "area_worst", "compactness_worst", "concavity_worst",
@@ -116,7 +116,8 @@ try:
                     fmt=".2f", vmin=-1, vmax=1)
         plt.show()
 
-        x = data_corr.drop("diagnosis", axis=1)
+        x = data_corr.drop(
+            columns=["diagnosis", "concave points_se", "perimeter_se", "area_se"])
         y = data_corr["diagnosis"]
 
         x_train, x_test, y_train, y_test = train_test_split(
@@ -142,7 +143,7 @@ try:
         no_neighbors = np.arange(2, 20)
         weights = ["distance", "uniform"]
         p = [1, 2]
-        n_estimators = np.arange(50, 310, 10)
+        n_estimators = np.arange(50, 160, 10)
         learning_rate = np.logspace(-2, 0, 8)
         voting_type = ["hard", "soft"]
 
@@ -223,6 +224,9 @@ try:
 
         for name, model in best_estimator.items():
             print(f"{name}:{model}")
+
+        final_model = LogisticRegression(
+            max_iter=1000, C=1.6681005372000592, random_state=random_state)
     else:
         print("Upload the file since it isn't available")
 except FileNotFoundError as e:
