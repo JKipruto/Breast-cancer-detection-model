@@ -42,7 +42,7 @@ try:
         y = encoder.fit_transform(y)
         print(encoder.classes_)
 
-        x = dataset.drop(columns="diagnosis")
+        x = dataset.drop(columns=["diagnosis", "perimeter_mean", "area_mean"])
         dataset["diagnosis"] = y
         corr = dataset.corr()
         print(corr)
@@ -220,6 +220,9 @@ try:
             plt.xlabel("Predicted")
             plt.ylabel("Actual")
             plt.show()
+
+        for name, model in best_estimator.items():
+            print(f"{name}:{model}")
     else:
         print("Upload the file since it isn't available")
 except FileNotFoundError as e:
