@@ -232,6 +232,8 @@ try:
         print(classification_report(y_test, pred, target_names=encoder.classes_))
         print(confusion_matrix(y_test, pred))
 
+        model_pipeline.fit(x,y)
+
         joblib.dump(model_pipeline, "breast_cancer_logreg.pkl")
         joblib.dump(list(x_train.columns), "feature_names.pkl")
     else:
