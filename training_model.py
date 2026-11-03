@@ -131,10 +131,10 @@ try:
             return Pipeline([("scaler", scaler), ("model", model)])
 
         voting_estimators = [
-            ("logReg", Build_Pipeline(LogisticRegression(
-                max_iter=1000, random_state=random_state))),
-            ("svc", Build_Pipeline(SVC(probability=True, random_state=random_state))),
-            ("rf", Build_Pipeline(RandomForestClassifier(random_state=random_state)))
+            ("logReg", LogisticRegression(
+                max_iter=100, random_state=random_state)),
+            ("svc", SVC(probability=True, random_state=random_state)),
+            ("rf", RandomForestClassifier(random_state=random_state))
         ]
 
         max_depth = np.arange(2, 20, 1)
@@ -156,7 +156,7 @@ try:
             "knn": (KNeighborsClassifier(), "grid", {"model__n_neighbors": no_neighbors, "model__weights": weights, "model__p": p}, None),
             "rf": (RandomForestClassifier(random_state=random_state), "random", {"model__max_depth": max_depth, "model__max_leaf_nodes": leaf_nodes, "model__n_estimators": n_estimators}, 20),
             "bag": (BaggingClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state)), "random", {"model__n_estimators": n_estimators}, 20),
-            "adaboost": (AdaBoostClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state, max_depth=10)), "random", {"model__n_estimators": n_estimators, "model__learning_rate": learning_rate}, 20),
+            "adaboost": (AdaBoostClassifier(random_state=random_state, estimator=LogisticRegression(random_state=random_state, max_iter=1000)), "random", {"model__n_estimators": n_estimators, "model__learning_rate": learning_rate}, 20),
             "voting": (VotingClassifier(estimators=voting_estimators), "grid", {"model__voting": voting_type}, None)
         }
 
