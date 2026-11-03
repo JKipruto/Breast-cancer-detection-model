@@ -21,8 +21,10 @@ try:
         random_state = 42
         print("File available")
         dataset = pd.read_csv(model_file)
-        columns = ["diagnosis", "radius_mean", "texture_mean", "perimeter_mean", "area_mean", "smoothness_mean", "compactness_mean", "concavity_mean", "concave points_mean", "symmetry_mean", "fractal_dimension_mean", "radius_se", "texture_se", "perimeter_se", "area_se", "smoothness_se",
-                   "compactness_se", "concavity_se", "concave points_se", "symmetry_se", "fractal_dimension_se", "radius_worst", "texture_worst", "perimeter_worst", "area_worst", "smoothness_worst", "compactness_worst", "concavity_worst", "concave points_worst", "symmetry_worst", "fractal_dimension_worst"
+        dataset.rename(columns={"concave points_se": "concave_points_se",
+                       "concave points_worst": "concave_points_worst", "concave points_mean": "concave_points_mean"}, inplace=True)
+        columns = ["diagnosis", "radius_mean", "texture_mean", "perimeter_mean", "area_mean", "smoothness_mean", "compactness_mean", "concavity_mean", "concave_points_mean", "symmetry_mean", "fractal_dimension_mean", "radius_se", "texture_se", "perimeter_se", "area_se", "smoothness_se",
+                   "compactness_se", "concavity_se", "concave_points_se", "symmetry_se", "fractal_dimension_se", "radius_worst", "texture_worst", "perimeter_worst", "area_worst", "smoothness_worst", "compactness_worst", "concavity_worst", "concave_points_worst", "symmetry_worst", "fractal_dimension_worst"
                    ]
         dataset = dataset[columns]
         row, col = dataset.shape
@@ -103,10 +105,10 @@ try:
             plt.xlabel(col)
             plt.show()
         columns_2 = ["diagnosis", "radius_mean", "compactness_mean",
-                     "concavity_mean", "concave points_mean", "radius_se", "perimeter_se",
-                     "area_se", "concave points_se", "radius_worst", "perimeter_worst",
+                     "concavity_mean", "concave_points_mean", "radius_se", "perimeter_se",
+                     "area_se", "concave_points_se", "radius_worst", "perimeter_worst",
                      "area_worst", "compactness_worst", "concavity_worst",
-                     "concave points_worst"]
+                     "concave_points_worst"]
         data_corr = dataset[columns_2]
         print(data_corr.columns)
 
@@ -117,7 +119,7 @@ try:
         plt.show()
 
         x = data_corr.drop(
-            columns=["diagnosis", "concave points_se", "perimeter_se", "area_se"])
+            columns=["diagnosis", "concave_points_se", "perimeter_se", "area_se"])
         y = data_corr["diagnosis"]
 
         x_train, x_test, y_train, y_test = train_test_split(
@@ -154,7 +156,7 @@ try:
             "knn": (KNeighborsClassifier(), "grid", {"model__n_neighbors": no_neighbors, "model__weights": weights, "model__p": p}, None),
             "rf": (RandomForestClassifier(random_state=random_state), "random", {"model__max_depth": max_depth, "model__max_leaf_nodes": leaf_nodes, "model__n_estimators": n_estimators}, 20),
             "bag": (BaggingClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state)), "random", {"model__n_estimators": n_estimators}, 20),
-            "adaboost": (AdaBoostClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state, max_depth=2)), "random", {"model__n_estimators": n_estimators, "model__learning_rate": learning_rate}, 20),
+            "adaboost": (AdaBoostClassifier(random_state=random_state, estimator=DecisionTreeClassifier(random_state=random_state, max_depth=10)), "random", {"model__n_estimators": n_estimators, "model__learning_rate": learning_rate}, 20),
             "voting": (VotingClassifier(estimators=voting_estimators), "grid", {"model__voting": voting_type}, None)
         }
 
@@ -232,7 +234,7 @@ try:
         print(classification_report(y_test, pred, target_names=encoder.classes_))
         print(confusion_matrix(y_test, pred))
 
-        model_pipeline.fit(x,y)
+        model_pipeline.fit(x, y)
 
         joblib.dump(model_pipeline, "breast_cancer_logreg.pkl")
         joblib.dump(list(x_train.columns), "feature_names.pkl")
